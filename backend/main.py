@@ -17,7 +17,10 @@ app = FastAPI(title="FitAI Pro API")
 # Allow React frontend to talk to this backend
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"], # Next.js port
+    allow_origins=[
+        "http://localhost:3000",         # Allows local testing
+        "https://fitaix.vercel.app"      # MUST BE YOUR EXACT VERCEL URL (No / at the end)
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
