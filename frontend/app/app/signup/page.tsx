@@ -10,6 +10,7 @@ export default function SignUpPage() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000';
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -18,7 +19,7 @@ export default function SignUpPage() {
 
     try {
       // Connects directly to Sparky's Better Auth sign-up endpoint
-      const res = await fetch('http://127.0.0.1:8000/api/auth/sign-up/email', {
+      const res = await fetch(`${API_URL}/api/auth/sign-up/email`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name, email, password }),

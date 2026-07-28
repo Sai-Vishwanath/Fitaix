@@ -9,6 +9,7 @@ export default function LoginPage() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000';
 
  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -17,7 +18,7 @@ export default function LoginPage() {
 
     try {
       // 1. Point to the correct SIGN-IN route on port 8000
-      const res = await fetch('http://127.0.0.1:8000/api/auth/sign-in/email', {
+      const res = await fetch(`${API_URL}/api/auth/sign-in/email`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password }),
