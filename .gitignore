@@ -1,0 +1,11 @@
+# Frontend
+node_modules/
+.next/
+
+# Backend
+.venv/
+__pycache__/
+*.db
+
+# Security
+.env
