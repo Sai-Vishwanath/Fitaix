@@ -45,21 +45,19 @@ function NavButton({
 // ─── Navigation Data ──────────────────────────────────────────────────────────
 
 const LEFT_ITEMS: NavItem[] = [
-  { href: '/',          label: 'Home',    Icon: Home     },
-  // Mapping to your existing recovery page so you can test it immediately
+  // FIXED: Changed '/' to '/dashboard' to keep users inside the app
+  { href: '/dashboard', label: 'Home',    Icon: Home     },
   { href: '/recovery',  label: 'Workout', Icon: Dumbbell }, 
 ];
 
 const RIGHT_ITEMS: NavItem[] = [
   { href: '/analytics', label: 'Analytics', Icon: BarChart3 },
-  // Mapping to your existing profile page
   { href: '/profile',   label: 'Profile',   Icon: User      },
 ];
 
 // ─── Main Component ───────────────────────────────────────────────────────────
 
 export function BottomNav({ onFabPress }: { onFabPress?: () => void }) {
-  // Next.js hook automatically reads the current URL to highlight the right tab
   const pathname = usePathname(); 
 
   return (
