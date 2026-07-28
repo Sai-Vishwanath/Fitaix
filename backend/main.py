@@ -8,6 +8,9 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, Session
 import bcrypt
 from fastapi.middleware.cors import CORSMiddleware
+import os
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker, declarative_base
 
 # Import the coach engine we just built
 from services.ai_coach.chat import generate_coach_response
@@ -27,8 +30,19 @@ app.add_middleware(
 )
 
 # --- 1. Database Setup ---
-SQLALCHEMY_DATABASE_URL = "sqlite:///./fitaix.db"
-engine = create_engine(SQLALCHEMY_DATABASE_URL, connect_args={"check_same_thread": False})
+# 1. Look for a live cloud database URL, fallback to local SQLite
+SQLALCHEMY_DATABASE_URL = os.environ.get("DATABASE_URL", "sqlite:///./fitaix.db")
+
+# 2. Fix a common glitch where some cloud providers use 'postgres://' instead of 'postgresql://'
+if SQLALCHEMY_DATABASE_URL.startswith("postgres://"):
+    SQLALCHEMY_DATABASE_URL = SQLALCHEMY_DATABASE_URL.replace("postgres://", "postgresql://", 1)
+
+# 3. Create the engine (SQLite needs special arguments, Postgres doesn't)
+if SQLALCHEMY_DATABASE_URL.startswith("sqlite"):
+    engine = create_engine(SQLALCHEMY_DATABASE_URL, connect_args={"check_same_thread": False})
+else:
+    engine = create_engine(SQLALCHEMY_DATABASE_URL)
+
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
 
