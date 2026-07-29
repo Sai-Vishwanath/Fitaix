@@ -21,6 +21,9 @@ import {
 // ── Reused project components ──────────────────────────────────────────────────
 import { BottomNav } from '../ui/BottomNav';
 import { RingProgress } from '../ui/RingProgress';
+// 🟢 1. IMPORT ADDED HERE!
+import { WorkoutModal } from '../ui/WorkoutModal'; 
+
 // Note: The recovery page uses a page-specific <PageTopBar /> instead of the
 // dashboard-style <Header /> because its layout (plain page title + icon buttons)
 // is structurally incompatible with the greeting-name-avatar pattern of Header.
@@ -144,10 +147,10 @@ function RecoveryHero() {
           </defs>
           <circle cx="40" cy="16" r="10"  fill="url(#figGrad)" opacity="0.9" />
           <circle cx="40" cy="16" r="3.5" fill="#FFD60A" />
-          <path d="M40 26v18"                                         stroke="url(#figGrad)" strokeWidth="7" strokeLinecap="round" />
+          <path d="M40 26v18"                                          stroke="url(#figGrad)" strokeWidth="7" strokeLinecap="round" />
           <path d="M40 34c-10 0-20 6-24 16M40 34c10 0 20 6 24 16"    stroke="url(#figGrad)" strokeWidth="6" strokeLinecap="round" fill="none" />
           <path d="M16 50c-4 6-4 14 6 16M64 50c4 6 4 14-6 16"        stroke="url(#figGrad)" strokeWidth="6" strokeLinecap="round" fill="none" />
-          <path d="M22 66c8 8 28 8 36 0"                              stroke="url(#figGrad)" strokeWidth="7" strokeLinecap="round" fill="none" />
+          <path d="M22 66c8 8 28 8 36 0"                               stroke="url(#figGrad)" strokeWidth="7" strokeLinecap="round" fill="none" />
         </svg>
       </div>
     </section>
@@ -483,10 +486,14 @@ function MedicalReports() {
 export function RecoveryPage() {
   // nav active key — 'profile' maps to the rightmost nav slot (Health/Recovery)
   const [activeTab, setActiveTab] = useState<TabKey>('body');
+  
+  // 🟢 2. ADDED THE MEMORY STATE HERE!
+  const [isWorkoutModalOpen, setIsWorkoutModalOpen] = useState(false);
+  
   const animated = useAnimated();
 
   return (
-    <div className="min-h-screen bg-black flex items-start justify-center font-sans">
+    <div className="min-h-screen bg-background flex items-start justify-center font-sans">
       {/* 390 px mobile viewport, centred on desktop */}
       <div className="relative w-full max-w-[390px] min-h-screen bg-background overflow-hidden">
 
@@ -522,7 +529,15 @@ export function RecoveryPage() {
         </div>
 
         {/* ── Reused BottomNav ────────────────────────────────────────────── */}
-        <BottomNav />
+        {/* 🟢 3. ADDED THE onAddClick COMMAND TO THE NAV BAR */}
+        <BottomNav onAddClick={() => setIsWorkoutModalOpen(true)} />
+        
+        {/* 🟢 4. ADDED THE MODAL COMPONENT */}
+        <WorkoutModal 
+          isOpen={isWorkoutModalOpen} 
+          onClose={() => setIsWorkoutModalOpen(false)} 
+        />
+        
       </div>
     </div>
   );

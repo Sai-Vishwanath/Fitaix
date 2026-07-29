@@ -57,7 +57,7 @@ const RIGHT_ITEMS: NavItem[] = [
 
 // ─── Main Component ───────────────────────────────────────────────────────────
 
-export function BottomNav({ onFabPress }: { onFabPress?: () => void }) {
+export function BottomNav({ onAddClick }: { onAddClick?: () => void }) {
   const pathname = usePathname(); 
 
   return (
@@ -87,7 +87,7 @@ export function BottomNav({ onFabPress }: { onFabPress?: () => void }) {
       <button
         type="button"
         aria-label="Quick add"
-        onClick={onFabPress}
+        onClick={onAddClick}
         className={[
           'w-[52px] h-[52px] rounded-full -mt-6',
           'bg-gradient-to-br from-brand-purple to-brand-pink',

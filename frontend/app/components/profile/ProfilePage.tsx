@@ -17,6 +17,7 @@ import { useRouter } from 'next/navigation';
 // ── Reused project components ──────────────────────────────────────────────────
 import { Header }    from '../ui/Header';
 import { BottomNav } from '../ui/BottomNav';
+import { WorkoutModal } from '../ui/WorkoutModal';
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // Types
@@ -134,14 +135,12 @@ function ToggleRows({ items, toggles, onToggle }: { items: { key: string; label:
 // Section Components
 // ═══════════════════════════════════════════════════════════════════════════════
 
-/* ── Profile Hero (UPDATED to accept userName prop) ────────────────────────── */
+/* ── Profile Hero ────────────────────────────────────────── */
 function ProfileHero({ userName }: { userName: string }) {
-  // Grab the first letter for the avatar
   const initial = userName.charAt(0).toUpperCase();
 
   return (
     <div className="flex items-center gap-3.5 bg-card border border-border rounded-[20px] p-4 mb-4">
-      {/* Avatar with edit badge */}
       <div className="relative flex-shrink-0">
         <div
           aria-label={`${userName} avatar`}
@@ -159,7 +158,6 @@ function ProfileHero({ userName }: { userName: string }) {
         </button>
       </div>
 
-      {/* Name / email / plan badge */}
       <div className="flex-1 min-w-0">
         <p className="text-[16px] font-extrabold text-text-primary">{userName}</p>
         <p className="text-[11.5px] text-text-secondary mt-0.5">user@email.com</p>
@@ -168,7 +166,6 @@ function ProfileHero({ userName }: { userName: string }) {
         </span>
       </div>
 
-      {/* Chevron CTA */}
       <button
         aria-label="Edit profile details"
         className="w-8 h-8 rounded-[10px] bg-card-inset flex items-center justify-center text-text-secondary flex-shrink-0"
@@ -391,6 +388,7 @@ function LogoutButton({ confirm, loggedOut, onClick }: { confirm: boolean; logge
 export function ProfilePage() {
   const [goals,     setGoals]     = useState<string[]>(['Lose Weight', 'Improve Strength']);
   const [equipment, setEquipment] = useState<string[]>(['Dumbbells', 'Barbell']);
+  const [isWorkoutModalOpen, setIsWorkoutModalOpen] = useState(false);
 
   const toggleChip = (arr: string[], item: string, setFn: (v: string[]) => void) =>
     setFn(arr.includes(item) ? arr.filter(x => x !== item) : [...arr, item]);
@@ -402,7 +400,32 @@ export function ProfilePage() {
   });
   const toggle = (key: string) => setToggles(prev => ({ ...prev, [key]: !prev[key] }));
 
+  // 🟢 THEME PERSISTENCE STATE & LOGIC
   const [theme, setTheme] = useState<ThemeKey>('dark');
+
+  useEffect(() => {
+    const savedTheme = (localStorage.getItem('fitai_theme') as ThemeKey) || 'dark';
+    setTheme(savedTheme);
+    applyTheme(savedTheme);
+  }, []);
+
+  const handleThemeChange = (newTheme: ThemeKey) => {
+    setTheme(newTheme);
+    localStorage.setItem('fitai_theme', newTheme);
+    applyTheme(newTheme);
+  };
+
+  const applyTheme = (selectedTheme: ThemeKey) => {
+    const root = document.documentElement;
+    root.classList.remove('dark', 'light');
+    
+    if (selectedTheme === 'system') {
+      const systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      root.classList.add(systemDark ? 'dark' : 'light');
+    } else {
+      root.classList.add(selectedTheme);
+    }
+  };
 
   const [deviceStatus, setDeviceStatus] = useState<Record<string, DeviceStatus>>({
     appleWatch: 'connected', whoop: 'disconnected', googleFit: 'disconnected',
@@ -442,10 +465,8 @@ export function ProfilePage() {
     setTimeout(() => { router.push('/'); }, 800);
   };
 
-  // 1. Dynamic User Name State
   const [userName, setUserName] = useState('Priyanshi');
 
-  // 2. Fetch from memory on load
   useEffect(() => {
     const storedName = localStorage.getItem('userName');
     if (storedName) {
@@ -454,18 +475,16 @@ export function ProfilePage() {
   }, []);
   
   return (
-    <div className="min-h-screen bg-black flex items-start justify-center font-sans">
+    <div className="min-h-screen bg-background flex items-start justify-center font-sans">
       <div className="relative w-full max-w-[390px] min-h-screen bg-background overflow-hidden">
         <div className="h-screen overflow-y-auto scrollbar-none px-5 pt-6 pb-28">
 
-          {/* ── UPDATED: Header now uses dynamic userName ── */}
           <Header
             name={userName}
             greeting="Profile & Settings"
             notificationCount={0}
           />
 
-          {/* ── UPDATED: ProfileHero now receives the dynamic userName ── */}
           <ProfileHero userName={userName} />
 
           <SectionLabel>Fitness Profile</SectionLabel>
@@ -501,7 +520,8 @@ export function ProfilePage() {
           />
 
           <SectionLabel>Theme Settings</SectionLabel>
-          <ThemeSelector theme={theme} setTheme={setTheme} />
+          {/* 🟢 PASSED THE HANDLER INSTEAD OF BASIC SETTER */}
+          <ThemeSelector theme={theme} setTheme={handleThemeChange} />
 
           <SectionLabel>Privacy</SectionLabel>
           <ToggleRows
@@ -527,7 +547,13 @@ export function ProfilePage() {
           <LogoutButton confirm={logoutConfirm} loggedOut={loggedOut} onClick={handleLogout} />
         </div>
 
-        <BottomNav />
+        <BottomNav onAddClick={() => setIsWorkoutModalOpen(true)} />
+
+        <WorkoutModal 
+          isOpen={isWorkoutModalOpen} 
+          onClose={() => setIsWorkoutModalOpen(false)} 
+        />
+        
       </div>
     </div>
   );

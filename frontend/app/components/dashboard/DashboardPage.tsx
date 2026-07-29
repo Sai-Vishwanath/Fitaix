@@ -1,7 +1,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { askFitAICoach } from '../../services/api'; 
+import { useRouter } from 'next/navigation';
+
 import {
   Activity,
   BarChart3,
@@ -17,12 +18,15 @@ import {
   Sparkles,
   Trophy,
   UtensilsCrossed,
+  Clock,
+  Zap,
   type LucideIcon,
 } from 'lucide-react';
 
-import { Header }      from '../ui/Header';
+import { Header } from '../ui/Header';
 import { BottomNav } from '../ui/BottomNav';
 import { RingProgress } from '../ui/RingProgress';
+import { WorkoutModal } from '../ui/WorkoutModal';
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // Types
@@ -61,12 +65,6 @@ const STREAK_DAYS = [
   { abbr: 'T', done: true  },
   { abbr: 'F', done: false },
 ];
-
-const GOALS = [
-  { label: 'Lose 5kg',   pct: 64, barClass: 'bg-brand-purple' },
-  { label: 'Bench 90kg', pct: 81, barClass: 'bg-brand-blue'   },
-  { label: 'Run 10km',   pct: 42, barClass: 'bg-brand-cyan'   },
-] as const;
 
 const NUTRITION_RINGS = [
   { label: 'Calories', progress: 0.72, color: '#F59E0B', display: '1.6k' },
@@ -118,7 +116,7 @@ const LEADERBOARD = [
     name:        'You',
     sub:         '28 workouts',
     score:       '2,610',
-    initial:     'P', // This will be dynamically overridden below
+    initial:     'P',
     avatarClass: 'bg-gradient-to-br from-brand-pink to-brand-purple',
     rowClass:    'bg-brand-purple/10 rounded-xl mx-[-8px] px-2',
     rankClass:   'text-text-secondary',
@@ -146,18 +144,18 @@ const QUICK_ACTIONS = [
 
 const CHALLENGES = [
   {
-    Icon:     Trophy,
-    pct:      73,
+    Icon:    Trophy,
+    pct:     73,
     barClass: 'bg-gradient-to-r from-brand-pink to-brand-purple',
-    title:    '30 Workouts in 30 Days',
-    meta:     '22/30 · 8 days left',
+    title:   '30 Workouts in 30 Days',
+    meta:    '22/30 · 8 days left',
   },
   {
-    Icon:     Droplets,
-    pct:      90,
+    Icon:    Droplets,
+    pct:     90,
     barClass: 'bg-gradient-to-r from-brand-blue to-brand-cyan',
-    title:    'Hydration Streak',
-    meta:     '9/10 days · 1 day left',
+    title:   'Hydration Streak',
+    meta:    '9/10 days · 1 day left',
   },
 ] as const;
 
@@ -309,14 +307,80 @@ function RecoveryStreakGrid() {
   );
 }
 
-function GoalProgressSection() {
+{/* 🟢 NEW: 15-MINUTE STREAK SAVER SECTION (WHITEBOARD NODE 2) */}
+function StreakSaverSection() {
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [workoutReady, setWorkoutReady] = useState(false);
+
+  const handleGenerate = () => {
+    setIsGenerating(true);
+    setTimeout(() => {
+      setIsGenerating(false);
+      setWorkoutReady(true);
+    }, 1000);
+  };
+
+  return (
+    <>
+      <SectionHeader title="15-Min Streak Saver" />
+      <Card className="border-status-amber/30 bg-gradient-to-b from-card to-status-amber/5">
+        <div className="flex items-start gap-3 mb-3">
+          <div className="w-9 h-9 rounded-xl bg-status-amber/20 text-status-amber flex items-center justify-center flex-shrink-0">
+            <Clock size={18} />
+          </div>
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2">
+              <b className="text-[13px] font-extrabold text-text-primary">Short on time today?</b>
+              <span className="text-[9px] font-bold px-2 py-0.5 rounded-full bg-status-amber/20 text-status-amber">AI EMERGENCY</span>
+            </div>
+            <p className="text-[10.5px] text-text-secondary mt-0.5">
+              Save your 24-day streak with a fast 15-minute workout.
+            </p>
+          </div>
+        </div>
+
+        {workoutReady ? (
+          <div className="p-3 bg-card-inset rounded-2xl border border-border space-y-2 mb-3">
+            <p className="text-[10px] font-bold text-status-amber uppercase tracking-wider">AI Quick Routine:</p>
+            <div className="flex justify-between items-center text-[12px] font-semibold text-text-primary border-b border-border/50 pb-1.5">
+              <span>🚶 Brisk Walk</span>
+              <span className="text-text-secondary">5 mins</span>
+            </div>
+            <div className="flex justify-between items-center text-[12px] font-semibold text-text-primary">
+              <span>💪 Pushups</span>
+              <span className="text-text-secondary">50 reps (3 sets)</span>
+            </div>
+          </div>
+        ) : null}
+
+        <button
+          onClick={workoutReady ? () => alert("Streak saved! Great job!") : handleGenerate}
+          disabled={isGenerating}
+          className="w-full py-2.5 rounded-xl bg-gradient-to-r from-status-amber to-orange-600 text-white font-bold text-[12px] flex items-center justify-center gap-2 transition-transform active:scale-98"
+        >
+          {isGenerating ? (
+            "Building 15-min Plan..."
+          ) : workoutReady ? (
+            <><Check size={14} /> Mark as Complete & Save Streak</>
+          ) : (
+            <><Zap size={14} /> Generate 15-Min Quick Workout</>
+          )}
+        </button>
+      </Card>
+    </>
+  );
+}
+
+type GoalType = { label: string; pct: number; barClass: string; };
+
+function GoalProgressSection({ goals, onManage }: { goals: GoalType[]; onManage: () => void }) {
   const animated = useAnimated();
   return (
     <>
-      <SectionHeader title="Goal Progress" action="Manage" />
+      <SectionHeader title="Goal Progress" action="Manage" onAction={onManage} />
       <Card>
-        {GOALS.map((goal, i) => (
-          <div key={goal.label} className={i < GOALS.length - 1 ? 'mb-3' : ''}>
+        {goals.map((goal, i) => (
+          <div key={i} className={i < goals.length - 1 ? 'mb-3' : ''}>
             <div className="flex justify-between text-[11.5px] mb-1.5">
               <span className="text-text-secondary">{goal.label}</span>
               <b className="font-bold text-text-primary">{goal.pct}%</b>
@@ -334,10 +398,10 @@ function GoalProgressSection() {
   );
 }
 
-function NutritionSection() {
+function NutritionSection({ onOpenMealModal }: { onOpenMealModal: () => void }) {
   return (
     <>
-      <SectionHeader title="Calories & Nutrition" action="Log Meal" />
+      <SectionHeader title="Calories & Nutrition" action="Log Meal" onAction={onOpenMealModal} />
       <Card>
         <div className="flex justify-around items-center">
           {NUTRITION_RINGS.map(ring => (
@@ -393,11 +457,11 @@ function LiveAICoachSection() {
     setIsThinking(true);
     setAiResponse("FitAI Pro is analyzing your data...");
     
-    // Hits the FastAPI Server -> Groq -> Llama-3.1
-    const response = await askFitAICoach("Give me a quick 1-sentence tip for today based on my recovery.");
-    
-    setAiResponse(response);
-    setIsThinking(false);
+    // Fake delay to simulate AI thinking before we connect the real backend!
+    setTimeout(() => {
+      setAiResponse("Based on your 89% recovery, push hard today but add 10 mins of stretching post-workout!");
+      setIsThinking(false);
+    }, 1500);
   };
 
   return (
@@ -481,7 +545,6 @@ function ActivitySection() {
   );
 }
 
-// UPDATED: Now receives userName so your initial in the leaderboard is dynamic!
 function LeaderboardSection({ userName }: { userName: string }) {
   const dynamicInitial = userName ? userName.charAt(0).toUpperCase() : 'P';
   
@@ -507,9 +570,28 @@ function LeaderboardSection({ userName }: { userName: string }) {
   );
 }
 
-function QuickActionsSection() {
+function QuickActionsSection({ 
+  onOpenMealModal, 
+  onOpenWorkoutModal, 
+  onOpenScanModal, 
+  onAddWater 
+}: { 
+  onOpenMealModal: () => void;
+  onOpenWorkoutModal: () => void;
+  onOpenScanModal: () => void;
+  onAddWater: () => void;
+}) {
   const [tapped, setTapped] = useState<number | null>(null);
-  const handleTap = (i: number) => { setTapped(i); setTimeout(() => setTapped(null), 150); };
+  
+  const handleTap = (i: number, label: string) => { 
+    setTapped(i); 
+    setTimeout(() => setTapped(null), 150); 
+    
+    if (label === 'Log Meal') onOpenMealModal();
+    if (label === 'Log Workout') onOpenWorkoutModal();
+    if (label === 'Scan Food') onOpenScanModal();
+    if (label === 'Add Water') onAddWater();
+  };
 
   return (
     <>
@@ -517,7 +599,7 @@ function QuickActionsSection() {
       <Card>
         <div className="grid grid-cols-4 gap-2.5">
           {QUICK_ACTIONS.map((action, i) => (
-            <button key={action.label} onClick={() => handleTap(i)} className="flex flex-col items-center text-center">
+            <button key={action.label} onClick={() => handleTap(i, action.label)} className="flex flex-col items-center text-center">
               <div className={['w-[52px] h-[52px] rounded-2xl bg-card-inset flex items-center justify-center mx-auto mb-1.5', 'transition-transform duration-150', action.iconColor, tapped === i ? 'scale-90' : 'scale-100 hover:scale-105'].join(' ')}>
                 <action.Icon size={22} />
               </div>
@@ -625,16 +707,27 @@ function NotificationsSection({ notifs, setNotifs }: { notifs: NotifItem[]; setN
 // ═══════════════════════════════════════════════════════════════════════════════
 
 export function DashboardPage() {
+  const router = useRouter();
+
   const [glasses,   setGlasses]       = useState<number>(4.5);
   const [selectedDay, setSelectedDay] = useState<string>('Wed');
   const [notifs, setNotifs]           = useState<NotifItem[]>(INITIAL_NOTIFS);
+  const [isWorkoutModalOpen, setIsWorkoutModalOpen] = useState(false);
+  const [isScanModalOpen, setIsScanModalOpen] = useState(false);
+
+  const [isGoalModalOpen, setIsGoalModalOpen] = useState(false);
+  const [goals, setGoals] = useState([
+    { label: 'Lose 5kg',   pct: 64, barClass: 'bg-brand-purple' },
+    { label: 'Bench 90kg', pct: 81, barClass: 'bg-brand-blue'   },
+    { label: 'Run 10km',   pct: 42, barClass: 'bg-brand-cyan'   },
+  ]);
+  const [editingIndex, setEditingIndex] = useState<number | null>(null);
+  const [editGoalText, setEditGoalText] = useState('');
 
   const unreadCount = notifs.filter(n => n.unread && !n.dismissed).length;
 
-  // 1. Dynamic User Name State added here!
   const [userName, setUserName] = useState('Priyanshi');
 
-  // 2. Fetch from browser memory on load
   useEffect(() => {
     const storedName = localStorage.getItem('userName');
     if (storedName) {
@@ -643,17 +736,22 @@ export function DashboardPage() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-black flex items-start justify-center font-sans">
+    <div className="min-h-screen bg-background flex items-start justify-center font-sans">
       <div className="relative w-full max-w-[390px] min-h-screen bg-background overflow-hidden">
         <div className="h-screen overflow-y-auto scrollbar-none px-5 pt-6 pb-28">
 
-          {/* ── UPDATED: Header now dynamically uses userName ── */}
           <Header name={userName} notificationCount={unreadCount} />
 
           <WorkoutBanner />
           <RecoveryStreakGrid />
-          <GoalProgressSection />
-          <NutritionSection />
+          
+          {/* 🟢 DROPPED 15-MIN STREAK SAVER HERE */}
+          <StreakSaverSection />
+
+          <GoalProgressSection goals={goals} onManage={() => setIsGoalModalOpen(true)} />
+          
+          <NutritionSection onOpenMealModal={() => router.push('/nutrition')} />
+          
           <WaterSection glasses={glasses} setGlasses={setGlasses} maxGlasses={7} />
           
           <LiveAICoachSection />
@@ -661,10 +759,14 @@ export function DashboardPage() {
           <WeeklyCalendarSection selectedDay={selectedDay} setSelectedDay={setSelectedDay} />
           <ActivitySection />
           
-          {/* ── UPDATED: Passing userName down to dynamic Leaderboard ── */}
           <LeaderboardSection userName={userName} />
           
-          <QuickActionsSection />
+          <QuickActionsSection 
+            onOpenMealModal={() => router.push('/nutrition')} 
+            onOpenWorkoutModal={() => setIsWorkoutModalOpen(true)}
+            onOpenScanModal={() => setIsScanModalOpen(true)}
+            onAddWater={() => setGlasses(g => Math.min(7, g + 1))} 
+          />
           <LiveStatsSection />
           <ChallengesSection />
           <NotificationsSection notifs={notifs} setNotifs={setNotifs} />
@@ -672,7 +774,113 @@ export function DashboardPage() {
           <div className="h-4" aria-hidden="true" />
         </div>
 
-        <BottomNav />
+        <WorkoutModal 
+          isOpen={isWorkoutModalOpen} 
+          onClose={() => setIsWorkoutModalOpen(false)} 
+        />
+
+        {/* --- SCAN FOOD MODAL --- */}
+        {isScanModalOpen && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
+            <div className="w-full max-w-sm p-6 bg-background rounded-3xl border border-border shadow-2xl text-center">
+              <div className="w-16 h-16 bg-brand-purple/20 text-brand-purple rounded-full flex items-center justify-center mx-auto mb-4">
+                <ScanLine size={32} />
+              </div>
+              <h2 className="text-xl font-bold text-text-primary mb-2">Camera Access Required</h2>
+              <p className="text-sm text-text-secondary mb-6">FitAI needs camera access to scan your food and calculate macros automatically.</p>
+              
+              <div className="flex gap-3">
+                <button 
+                  onClick={() => setIsScanModalOpen(false)}
+                  className="flex-1 py-3 bg-text-secondary/20 hover:bg-text-secondary/30 text-text-primary rounded-xl font-semibold transition-colors"
+                >
+                  Cancel
+                </button>
+                <button 
+                  onClick={() => setIsScanModalOpen(false)}
+                  className="flex-1 py-3 bg-gradient-to-br from-status-green to-emerald-600 text-white rounded-xl font-semibold transition-colors hover:scale-[1.02]"
+                >
+                  Open Camera
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* --- MANAGE GOALS MODAL --- */}
+        {isGoalModalOpen && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
+            <div className="w-full max-w-sm p-6 bg-background rounded-3xl border border-border shadow-2xl">
+              <h2 className="text-xl font-bold text-text-primary mb-2">Manage Goals</h2>
+
+              {editingIndex !== null ? (
+                <>
+                  <p className="text-sm text-text-secondary mb-6">Rename your target.</p>
+                  <input
+                    type="text"
+                    value={editGoalText}
+                    onChange={(e) => setEditGoalText(e.target.value)}
+                    className="w-full p-4 bg-card-inset border border-border rounded-xl mb-6 text-text-primary focus:outline-none focus:border-brand-purple"
+                  />
+                  <div className="flex gap-3">
+                    <button 
+                      onClick={() => setEditingIndex(null)}
+                      className="flex-1 py-3 bg-text-secondary/20 hover:bg-text-secondary/30 text-text-primary rounded-xl font-semibold transition-colors"
+                    >
+                      Cancel
+                    </button>
+                    <button 
+                      onClick={() => {
+                        const newGoals = [...goals];
+                        newGoals[editingIndex].label = editGoalText;
+                        setGoals(newGoals);
+                        setEditingIndex(null);
+                      }}
+                      className="flex-1 py-3 bg-gradient-to-br from-brand-purple to-brand-pink text-white rounded-xl font-semibold hover:scale-[1.02]"
+                    >
+                      Save
+                    </button>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <p className="text-sm text-text-secondary mb-6">Adjust your current fitness targets.</p>
+                  <div className="space-y-4 mb-6">
+                    {goals.map((goal, index) => (
+                      <div key={index} className="flex justify-between items-center p-3 bg-card-inset rounded-xl border border-border">
+                        <span className="text-sm font-semibold text-text-primary">{goal.label}</span>
+                        <button 
+                          onClick={() => {
+                            setEditingIndex(index);
+                            setEditGoalText(goal.label);
+                          }}
+                          className="text-xs font-bold text-brand-purple"
+                        >
+                          Edit
+                        </button>
+                      </div>
+                    ))}
+                    <button className="w-full p-3 border border-dashed border-border rounded-xl text-sm font-semibold text-text-secondary hover:text-brand-purple hover:border-brand-purple transition-colors">
+                      + Add New Goal
+                    </button>
+                  </div>
+
+                  <button 
+                    onClick={() => {
+                      setIsGoalModalOpen(false);
+                      setEditingIndex(null);
+                    }}
+                    className="w-full py-3 bg-gradient-to-br from-brand-purple to-brand-pink text-white rounded-xl font-semibold transition-colors hover:scale-[1.02]"
+                  >
+                    Done
+                  </button>
+                </>
+              )}
+            </div>
+          </div>
+        )}
+
+        <BottomNav onAddClick={() => setIsWorkoutModalOpen(true)} />
       </div>
     </div>
   );

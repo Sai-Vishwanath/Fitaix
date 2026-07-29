@@ -1,3 +1,32 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* ── Global Scrollbar Elimination (Removes ugly right-side scrollbar) ── */
+* {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;     /* Firefox */
+}
+*::-webkit-scrollbar {
+  display: none;             /* Chrome, Safari, Opera */
+}
+
+/* ── Dark Mode Tokens (Based on Design System v1.0)[cite: 2] ── */
+:root, .dark {
+  --background: #121214;       /* Rich charcoal-black base */
+  --card: #161616;             /* Signature card surface[cite: 2] */
+  --card-inset: #101010;       /* Deeper inset tracks[cite: 2] */
+  --text-primary: #F4F4F5;     /* Soft warm off-white text */
+  --text-secondary: #B0AA9A;   /* Muted secondary metadata[cite: 2] */
+  --border: rgba(255, 214, 10, 0.09); /* Subtle gold-tinted border[cite: 2] */
+}
+
+/* ── Low-Glare, Eye-Friendly Light Mode ── */
+.light {
+  --background: #F4F4F6;       /* Soft neutral light gray (no glare) */
+  --card: #FFFFFF;             /* Clean crisp white cards */
+  --card-inset: #E4E4E7;       /* Soft contrasting nested containers */
+  --text-primary: #18181B;     /* Deep rich charcoal text (easy on eyes) */
+  --text-secondary: #71717A;   /* Balanced secondary text */
+  --border: rgba(0, 0, 0, 0.08);/* Clean subtle border */
+}
