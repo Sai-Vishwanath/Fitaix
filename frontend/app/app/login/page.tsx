@@ -36,8 +36,8 @@ export default function LoginPage() {
       dispatch({
         type: 'UPDATE_PROFILE',
         payload: {
-          name: user.name,
-          onboarded: user.onboarded
+          name: user.name || 'User',
+          onboarded: user.onboarded || false
         }
       });
 
