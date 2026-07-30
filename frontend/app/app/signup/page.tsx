@@ -2,15 +2,18 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { useFitAIDispatch, useFitAIState } from '../../lib/FitAIContext';
 
 export default function SignUpPage() {
   const router = useRouter();
+  const dispatch = useFitAIDispatch();
+  const { hydrated } = useFitAIState() as any; // Safe fallback since we just need the hook to be called
+  
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000';
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -18,24 +21,31 @@ export default function SignUpPage() {
     setLoading(true);
 
     try {
-      // Connects directly to Sparky's Better Auth sign-up endpoint
-      const res = await fetch(`${API_URL}/api/auth/sign-up/email`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, email, password }),
-        credentials: 'include', // Ensures the automatic login cookie is saved
-      });
+      // 1. Client-Side Mock: Retrieve existing users
+      const storedUsers = localStorage.getItem('fitai_mock_users');
+      const users = storedUsers ? JSON.parse(storedUsers) : [];
 
-      if (!res.ok) {
-        const data = await res.json().catch(() => ({}));
-        throw new Error(data.message || 'Failed to create account.');
+      // 2. Check if user exists
+      if (users.find((u: any) => u.email === email)) {
+        throw new Error('An account with this email already exists.');
       }
 
-      const successData = await res.json(); 
-      localStorage.setItem('userName', successData.name);
+      // 3. Create and save new user
+      const newUser = { name, email, password, onboarded: false };
+      users.push(newUser);
+      localStorage.setItem('fitai_mock_users', JSON.stringify(users));
 
-      // Success! Better Auth usually auto-logs the user in after sign up.
-      // Teleport them straight to their new profile page!
+      // 4. Update global state immediately (logging them in)
+      dispatch({ type: 'RESET_STATE' }); // Clear any previous user's data
+      dispatch({
+        type: 'UPDATE_PROFILE',
+        payload: {
+          name,
+          onboarded: false
+        }
+      });
+
+      // 5. Route to dashboard (will pop onboarding modal)
       router.push('/dashboard');
     } catch (err: any) {
       setError(err.message || 'Something went wrong. Please try again.');
@@ -49,7 +59,7 @@ export default function SignUpPage() {
       <div className="w-full max-w-md p-6 bg-zinc-900 rounded-2xl border border-zinc-800 shadow-xl">
         <h1 className="text-2xl font-bold text-center mb-2">Create Account</h1>
         <p className="text-sm text-zinc-400 text-center mb-6">
-          Join SparkyFitness today
+          Join FitxAI today
         </p>
 
         {error && (

@@ -2,14 +2,17 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { useFitAIDispatch, useFitAIState } from '../../lib/FitAIContext';
 
 export default function LoginPage() {
   const router = useRouter();
+  const dispatch = useFitAIDispatch();
+  const { hydrated } = useFitAIState() as any; // Safe fallback since we just need the hook to be called
+
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000';
 
  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -17,24 +20,28 @@ export default function LoginPage() {
     setLoading(true);
 
     try {
-      // 1. Point to the correct SIGN-IN route on port 8000
-      const res = await fetch(`${API_URL}/api/auth/sign-in/email`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password }),
-        credentials: 'include',
-      });
+      // 1. Client-Side Mock: Retrieve users
+      const storedUsers = localStorage.getItem('fitai_mock_users');
+      const users = storedUsers ? JSON.parse(storedUsers) : [];
 
-      if (!res.ok) {
-        const data = await res.json().catch(() => ({}));
-        throw new Error(data.detail || 'Invalid email or password.');
+      // 2. Validate email and password
+      const user = users.find((u: any) => u.email === email && u.password === password);
+      
+      if (!user) {
+        throw new Error('Invalid email or password.');
       }
 
-      // 2. Grab the real name from the database and save it to memory!
-      const successData = await res.json();
-      localStorage.setItem('userName', successData.name);
+      // 3. Update global state immediately
+      dispatch({ type: 'RESET_STATE' });
+      dispatch({
+        type: 'UPDATE_PROFILE',
+        payload: {
+          name: user.name,
+          onboarded: user.onboarded
+        }
+      });
 
-      // 3. Teleport them to the dashboard
+      // 4. Teleport them to the dashboard
       router.push('/dashboard');
     } catch (err: any) {
       setError(err.message || 'Something went wrong. Please try again.');

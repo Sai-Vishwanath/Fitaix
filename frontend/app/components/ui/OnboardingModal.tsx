@@ -42,10 +42,12 @@ export function OnboardingModal() {
   const handleComplete = () => {
     if (!goal) return;
 
+    const finalName = name.trim() || 'Athlete';
+
     dispatch({
       type: 'UPDATE_PROFILE',
       payload: {
-        name: name.trim() || 'Athlete',
+        name: finalName,
         age: Number(stats.age),
         weight: Number(stats.weight),
         height: Number(stats.height),
@@ -53,6 +55,24 @@ export function OnboardingModal() {
         onboarded: true,
       },
     });
+
+    // Also update our mock database so the flag persists across sessions
+    try {
+      const storedUsers = localStorage.getItem('fitai_mock_users');
+      if (storedUsers) {
+        const users = JSON.parse(storedUsers);
+        const updatedUsers = users.map((u: any) => {
+           // We map by name since email isn't in global state, but it's enough for this mock
+           if (u.name === profile.name || u.name === finalName) {
+             return { ...u, onboarded: true };
+           }
+           return u;
+        });
+        localStorage.setItem('fitai_mock_users', JSON.stringify(updatedUsers));
+      }
+    } catch (e) {
+      console.error('Failed to update mock users DB', e);
+    }
 
     setIsOpen(false);
   };
