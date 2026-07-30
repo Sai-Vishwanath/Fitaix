@@ -2,7 +2,15 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Home, Dumbbell, Plus, BarChart3, User, type LucideIcon } from 'lucide-react';
+import {
+  Home,
+  Dumbbell,
+  Plus,
+  BarChart3,
+  User,
+  HeartPulse,
+  type LucideIcon,
+} from 'lucide-react';
 
 // ─── Internal Types ───────────────────────────────────────────────────────────
 
@@ -12,15 +20,9 @@ interface NavItem {
   Icon:  LucideIcon;
 }
 
-// ─── Item Component (Now using Next.js Link) ──────────────────────────────────
+// ─── Item Component ───────────────────────────────────────────────────────────
 
-function NavButton({
-  item,
-  isActive,
-}: {
-  item:     NavItem;
-  isActive: boolean;
-}) {
+function NavButton({ item, isActive }: { item: NavItem; isActive: boolean }) {
   return (
     <Link
       href={item.href}
@@ -29,7 +31,7 @@ function NavButton({
       aria-label={item.label}
       className={[
         'flex flex-col items-center gap-[3px] text-[10px] font-semibold',
-        'px-3.5 py-2 rounded-2xl',
+        'px-3 py-2 rounded-2xl',
         'transition-all duration-200',
         isActive
           ? 'text-brand-purple bg-brand-purple/[0.12]'
@@ -43,22 +45,23 @@ function NavButton({
 }
 
 // ─── Navigation Data ──────────────────────────────────────────────────────────
+// Layout: Home · Workout | [FAB] | Recovery · Profile
+// The FAB (centre + button) opens the quick-add workout modal on every screen.
 
 const LEFT_ITEMS: NavItem[] = [
-  // FIXED: Changed '/' to '/dashboard' to keep users inside the app
   { href: '/dashboard', label: 'Home',    Icon: Home     },
-  { href: '/recovery',  label: 'Workout', Icon: Dumbbell }, 
+  { href: '/workout',   label: 'Workout', Icon: Dumbbell },
 ];
 
 const RIGHT_ITEMS: NavItem[] = [
-  { href: '/analytics', label: 'Analytics', Icon: BarChart3 },
-  { href: '/profile',   label: 'Profile',   Icon: User      },
+  { href: '/recovery',  label: 'Recovery', Icon: HeartPulse },
+  { href: '/analytics', label: 'Progress', Icon: BarChart3  },
 ];
 
 // ─── Main Component ───────────────────────────────────────────────────────────
 
 export function BottomNav({ onAddClick }: { onAddClick?: () => void }) {
-  const pathname = usePathname(); 
+  const pathname = usePathname();
 
   return (
     <nav
@@ -79,14 +82,14 @@ export function BottomNav({ onAddClick }: { onAddClick?: () => void }) {
         <NavButton
           key={item.href}
           item={item}
-          isActive={pathname === item.href}
+          isActive={pathname === item.href || pathname.startsWith(item.href + '/')}
         />
       ))}
 
-      {/* Central FAB */}
+      {/* Central FAB — quick-add workout */}
       <button
         type="button"
-        aria-label="Quick add"
+        aria-label="Quick add workout"
         onClick={onAddClick}
         className={[
           'w-[52px] h-[52px] rounded-full -mt-6',
@@ -104,7 +107,7 @@ export function BottomNav({ onAddClick }: { onAddClick?: () => void }) {
         <NavButton
           key={item.href}
           item={item}
-          isActive={pathname === item.href}
+          isActive={pathname === item.href || pathname.startsWith(item.href + '/')}
         />
       ))}
     </nav>

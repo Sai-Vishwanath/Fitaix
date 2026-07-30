@@ -1,21 +1,27 @@
 import './globals.css';
 
+import { FitAIProvider } from '../lib/FitAIContext';
+import { getThemeInitScript } from '../lib/theme';
+
 export default function RootLayout({
   children,
 }: {
-  children: React.ReactNode
+  children: React.ReactNode;
 }) {
   return (
-    <html lang="en">
-      {/* 1. We make the main background a dark gray (zinc-950) and center everything */}
-      <body className="bg-zinc-950 text-white min-h-screen flex justify-center antialiased">
-        
-        {/* 2. This div acts as the "phone screen" (max-w-md restricts the width) */}
-        <div className="w-full max-w-md min-h-screen bg-black border-x border-zinc-900 shadow-2xl flex flex-col relative">
-          {children}
-        </div>
-
+    <html lang="en" suppressHydrationWarning>
+      <head>
+        <script
+          dangerouslySetInnerHTML={{ __html: getThemeInitScript() }}
+        />
+      </head>
+      <body className="bg-background text-text-primary min-h-screen flex justify-center antialiased">
+        <FitAIProvider>
+          <div className="w-full max-w-md min-h-screen bg-background border-x border-border shadow-2xl flex flex-col relative">
+            {children}
+          </div>
+        </FitAIProvider>
       </body>
     </html>
-  )
+  );
 }
