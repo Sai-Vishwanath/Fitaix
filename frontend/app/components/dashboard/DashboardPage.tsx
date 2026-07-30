@@ -189,7 +189,7 @@ export function DashboardPage() {
   if (!hydrated) return <div className="min-h-screen bg-black" />;
 
   const { profile, recovery, dashboard, nutrition, workouts } = state;
-  const name = profile.name ? profile.name.split(' ')[0] : 'Athlete';
+  const name = profile.name ? profile.name.split(' ')[0] : 'User';
   
   // Totals
   const activeDayMeals = nutrition.days.find(d => d.dayKey === nutrition.activeDay)?.meals || [];

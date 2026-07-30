@@ -82,7 +82,7 @@ function PageTopBar() {
   const state = useFitAIState();
   const router = useRouter();
   const hydrated = useFitAIHydrated();
-  const name = hydrated && state.profile.name ? state.profile.name.split(' ')[0] : 'Athlete';
+  const name = hydrated && state.profile.name ? state.profile.name.split(' ')[0] : 'User';
 
   return (
     <div className="flex justify-between items-center mt-2.5 mb-4">

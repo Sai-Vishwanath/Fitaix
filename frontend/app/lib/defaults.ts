@@ -100,7 +100,7 @@ export function createDefaultState(): AppState {
   return {
     version: STATE_VERSION,
     profile: {
-      name: 'Priyanshi',
+      name: '',
       age: 21,
       weight: 65,
       height: 165,

@@ -129,7 +129,7 @@ export function WorkoutPage() {
   const sleepFormatted = `${Math.floor(sleepMinutes / 60)}h ${sleepMinutes % 60}m`;
   
   const readiness = recoveryScore >= 80 ? 'High' : recoveryScore >= 60 ? 'Medium' : 'Low';
-  const name = hydrated ? state.profile.name.split(' ')[0] : 'Priyanshi';
+  const name = hydrated ? state.profile.name.split(' ')[0] : 'User';
 
   const selectedWorkout = AI_WORKOUTS[0];
 

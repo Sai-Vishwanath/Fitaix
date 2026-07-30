@@ -361,7 +361,7 @@ export default function AnalyticsPage() {
                 className="w-[38px] h-[38px] rounded-full bg-gradient-to-br from-brand-pink to-brand-purple flex items-center justify-center font-extrabold text-[13px] text-white cursor-pointer hover:scale-105 active:scale-95 transition-transform shadow-sm"
                 onClick={() => router.push('/profile')}
               >
-                {(profile.name ? profile.name.split(' ')[0] : 'Athlete').charAt(0).toUpperCase()}
+                {(profile.name ? profile.name.split(' ')[0] : 'User').charAt(0).toUpperCase()}
               </div>
             </div>
           </div>
